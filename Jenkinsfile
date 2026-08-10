@@ -1,23 +1,16 @@
 pipeline {
     agent any
-
     environment {
-        // Credentials IDs (must match what you created)
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
-        GITHUB_CREDS   = credentials('github-creds')
-
         IMAGE = "akrembejaoui/migration"
-        TAG   = "backend-${env.BUILD_NUMBER}"
-        MANIFEST_REPO = "https://github.com/akrembejaoui/task-manager-manifests.git"
+        TAG = "backend-${env.BUILD_NUMBER}"
     }
-
     stages {
-        stage('Build JAR') {
+        stage('Build') {
             steps {
                 sh './mvnw clean package -DskipTests'
             }
         }
-
         stage('Docker Build & Push') {
             steps {
                 sh "docker build -t ${IMAGE}:${TAG} ."
@@ -25,24 +18,16 @@ pipeline {
                 sh "docker push ${IMAGE}:${TAG}"
             }
         }
-
-        stage('Update Manifest Repository') {
+        stage('Update Manifest Repo') {
             steps {
                 sh """
-                    # Clone manifest repo
-                    git clone ${MANIFEST_REPO} manifests
+                    git clone https://github.com/bejaouiakrem/task-manager-manifests.git manifests
                     cd manifests
-
-                    # Update the image tag in the backend deployment file
-                    # Adjust the file path if your manifests are structured differently
-                    sed -i 's|image: ${IMAGE}:.*|image: ${IMAGE}:${TAG}|' backend/backend-deployment.yaml
-
-                    # Commit and push using GitHub credentials
+                    sed -i 's|image: .*|image: ${IMAGE}:${TAG}|' backend/backend-deployment.yaml
                     git config user.email "jenkins@local"
-                    git config user.name "Jenkins CI"
-                    git add backend/backend-deployment.yaml
-                    git commit -m "Update backend image to ${TAG} [skip ci]"
-                    git push https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@github.com/akrembejaoui/task-manager-manifests.git
+                    git config user.name "Jenkins"
+                    git commit -am "update backend image to ${TAG}"
+                    git push
                 """
             }
         }
