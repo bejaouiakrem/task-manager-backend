@@ -2,13 +2,14 @@ pipeline {
     agent any
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        GITHUB_CREDS = credentials('github-creds')
         IMAGE = "akrembejaoui/migration"
         TAG = "backend-${env.BUILD_NUMBER}"
     }
     stages {
         stage('Build') {
             steps {
-		sh 'chmod +x mvnw && ./mvnw clean package -DskipTests'
+                sh 'chmod +x mvnw && ./mvnw clean package -DskipTests'
             }
         }
         stage('Docker Build & Push') {
@@ -26,8 +27,9 @@ pipeline {
                     sed -i 's|image: .*|image: ${IMAGE}:${TAG}|' backend/backend-deployment.yaml
                     git config user.email "jenkins@local"
                     git config user.name "Jenkins"
-                    git commit -am "update backend image to ${TAG}"
-                    git push
+                    git commit -am "update backend image to ${TAG} [skip ci]"
+                    # Push with authentication using the token
+                    git push https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@github.com/bejaouiakrem/task-manager-manifests.git
                 """
             }
         }
