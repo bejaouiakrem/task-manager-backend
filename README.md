@@ -17,5 +17,3 @@ Spring Boot backend for a complete Task Management System with JWT authenticatio
 - **🛡️ Spring Security** - Comprehensive security configuration
 - **🔒 CORS Support** - Cross-origin resource sharing for frontend
 - **📋 Validation** - Request validation and error handling
-
-
