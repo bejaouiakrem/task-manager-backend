@@ -22,6 +22,7 @@ pipeline {
         stage('Update Manifest Repo') {
             steps {
                 sh """
+                    rm -rf manifests
                     git clone https://github.com/bejaouiakrem/task-manager-manifests.git manifests
                     cd manifests
                     sed -i 's|image: .*|image: ${IMAGE}:${TAG}|' backend/backend-deployment.yaml
